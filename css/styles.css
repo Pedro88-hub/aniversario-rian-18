@@ -6,6 +6,18 @@ html {
   text-size-adjust: 100%;
 }
 
+/* Fallback quando o embed do Spotify não carrega (ex.: file://) */
+.spotify-fallback {
+  padding: 1.25rem;
+  border-radius: 0.75rem;
+  border: 1px dashed rgba(157, 0, 255, 0.45);
+  background: rgba(0, 0, 0, 0.35);
+  min-height: 352px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
 /* Esconde host do Spotify sem tirar do DOM (precisa existir pra tocar no celular) */
 .sr-only {
   position: absolute;

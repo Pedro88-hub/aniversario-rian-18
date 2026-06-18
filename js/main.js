@@ -127,12 +127,65 @@
   });
 
   /* ---------------- Spotify ---------------- */
-  const embed = document.getElementById('spotify-embed');
-  if (embed && cfg.spotify.embedPlaylistId) {
-    embed.innerHTML = `<iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/${cfg.spotify.embedPlaylistId}?utm_source=generator&theme=0" width="100%" height="352" frameborder="0" allowfullscreen allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>`;
-  }
   const addFunk = document.getElementById('add-funk');
-  if (addFunk) addFunk.href = cfg.spotify.collabPlaylistUrl || '#';
+  const playlistUrl = cfg.spotify?.collabPlaylistUrl
+    || (cfg.spotify?.embedPlaylistId
+      ? `https://open.spotify.com/playlist/${cfg.spotify.embedPlaylistId}`
+      : '');
+  if (addFunk) addFunk.href = playlistUrl || '#';
+
+  (async function setupSpotifyEmbed() {
+    const embed = document.getElementById('spotify-embed');
+    const id = cfg.spotify?.embedPlaylistId;
+    if (!embed || !id) return;
+
+    const openLink = (extra = '') => `
+      <a href="${playlistUrl}" target="_blank" rel="noopener"
+         class="mt-3 block text-center font-comic text-sm text-cyber hover:text-neon underline transition">
+        ${extra}Abrir a playlist no Spotify ↗
+      </a>`;
+
+    /* Spotify embed quebra com "Page not available" em file:// */
+    if (location.protocol === 'file:') {
+      embed.innerHTML = `
+        <div class="spotify-fallback">
+          <p class="font-comic text-zap text-sm mb-2">⚠️ O player do Spotify não funciona abrindo o arquivo direto.</p>
+          <p class="font-comic text-white/60 text-xs mb-4">
+            Rode <code class="text-neon bg-black/40 px-1 rounded">python -m http.server 8000</code>
+            e abra <code class="text-neon bg-black/40 px-1 rounded">http://localhost:8000</code>
+          </p>
+          <a href="${playlistUrl}" target="_blank" rel="noopener"
+             class="block text-center font-meme text-lg bg-cyber text-black px-6 py-3 rounded-full hover:bg-neon transition">
+            🎧 ABRIR A PLAYLIST NO SPOTIFY
+          </a>
+        </div>`;
+      return;
+    }
+
+    const iframeSrc = `https://open.spotify.com/embed/playlist/${id}?utm_source=generator`;
+    const iframeHtml = `<iframe style="border-radius:12px" src="${iframeSrc}" width="100%" height="352" frameborder="0" allowfullscreen allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>`;
+
+    try {
+      const res = await fetch(
+        'https://open.spotify.com/oembed?url=' +
+        encodeURIComponent(`https://open.spotify.com/playlist/${id}`)
+      );
+      if (res.ok) {
+        const data = await res.json();
+        if (data.html) {
+          embed.innerHTML = data.html + openLink('Player não carregou? ');
+          const iframe = embed.querySelector('iframe');
+          if (iframe) {
+            iframe.style.borderRadius = '12px';
+            iframe.style.width = '100%';
+          }
+          return;
+        }
+      }
+    } catch (e) { /* cai no iframe manual */ }
+
+    embed.innerHTML = iframeHtml + openLink('Player não carregou? ');
+  })();
 
   /* ---------------- Botões de confete ---------------- */
   document.getElementById('confetti-btn')?.addEventListener('click', () => RianFX.rain(2500));

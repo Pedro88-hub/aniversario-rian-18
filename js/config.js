@@ -14,7 +14,7 @@ window.RIAN_CONFIG = {
     // ID da playlist que toca no player (pega na URL: open.spotify.com/playlist/<ESTE_ID>)
     embedPlaylistId: '3IKZHLSvyLfi2rkTElZHJO', // 💥🔉 — playlist do baile
     // Link COMPLETO da playlist COLABORATIVA (botão "adicionar funk")
-    collabPlaylistUrl: 'https://open.spotify.com/playlist/3IKZHLSvyLfi2rkTElZHJO?si=1028595351744ade',
+    collabPlaylistUrl: 'https://open.spotify.com/playlist/3IKZHLSvyLfi2rkTElZHJO?si=44dc8499c05542a0',
   },
 
   /* ---------- Supabase (persistência do mural) ----------

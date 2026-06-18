@@ -19,16 +19,22 @@
   }
 
   const Store = {
+    isVisible(item) {
+      return item?.message !== '__deleted__';
+    },
+
     async list() {
       if (supa) {
         const { data, error } = await supa
           .from(cfg.supabase.table)
           .select('*')
+          .neq('message', '__deleted__')
           .order('created_at', { ascending: false });
         if (error) throw error;
         return data || [];
       }
       return JSON.parse(localStorage.getItem(LS_KEY) || '[]')
+        .filter(Store.isVisible)
         .sort((a, b) => b.created_at - a.created_at);
     },
 
@@ -195,6 +201,7 @@
     let connected = false;
     try {
       items = await Store.list();
+      items = items.filter(Store.isVisible);
       connected = Boolean(supa);
     } catch (e) {
       console.error(e);

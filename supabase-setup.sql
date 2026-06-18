@@ -35,6 +35,7 @@ alter table public.mural enable row level security;
 create policy "mural_select" on public.mural for select using (true);
 create policy "mural_insert" on public.mural for insert with check (true);
 create policy "mural_update" on public.mural for update using (true) with check (true);
+create policy "mural_delete" on public.mural for delete using (true);
 
 -- 4) Bucket público pras fotos
 insert into storage.buckets (id, name, public)
