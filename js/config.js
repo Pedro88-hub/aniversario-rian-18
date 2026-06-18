@@ -27,8 +27,8 @@ window.RIAN_CONFIG = {
    *  3. Rode o SQL que está em supabase-setup.sql (cria tabela + bucket).
    */
   supabase: {
-    url: '',      // <- ex: 'https://xxxxxxxx.supabase.co'
-    anonKey: '',  // <- ex: 'eyJhbGciOi...'
+    url: 'https://hgkxaxhuivllcojcegrf.supabase.co',
+    anonKey: 'sb_publishable_kZOmDTTCgfFWl3m1rHAhNg_-0LFlg7Y',
     table: 'mural',          // nome da tabela das mensagens
     bucket: 'mural-fotos',   // nome do bucket de imagens
   },
