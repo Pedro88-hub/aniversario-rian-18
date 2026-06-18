@@ -4,6 +4,18 @@
 (function main() {
   const cfg = window.RIAN_CONFIG;
 
+  /* ---------------- Bloqueio de zoom no mobile ---------------- */
+  // iOS ignora user-scalable=no, então barramos a pinça e o double-tap-zoom na mão.
+  ['gesturestart', 'gesturechange', 'gestureend'].forEach((ev) =>
+    document.addEventListener(ev, (e) => e.preventDefault(), { passive: false })
+  );
+  let lastTouchEnd = 0;
+  document.addEventListener('touchend', (e) => {
+    const now = Date.now();
+    if (now - lastTouchEnd <= 300) e.preventDefault(); // double-tap = zoom
+    lastTouchEnd = now;
+  }, { passive: false });
+
   /* ---------------- Modais ---------------- */
   window.openModal = (id) => document.getElementById(id)?.classList.add('modal-open');
   window.closeModal = (id) => document.getElementById(id)?.classList.remove('modal-open');

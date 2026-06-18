@@ -1,3 +1,11 @@
+/* Bloqueia zoom/pinça no mobile pra ninguém se perder navegando.
+   touch-action evita pinça e o double-tap-zoom; text-size-adjust trava o auto-zoom. */
+html {
+  touch-action: pan-x pan-y;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
 /* Esconde host do Spotify sem tirar do DOM (precisa existir pra tocar no celular) */
 .sr-only {
   position: absolute;
@@ -131,7 +139,7 @@ body {
   box-shadow: 0 0 30px var(--neon);
   z-index: 5;
 }
-.polaroid img {
+.polaroid > img {
   width: 100%;
   display: block;
   border-radius: 2px;
@@ -159,43 +167,159 @@ body {
   position: relative;
 }
 
-/* Barra de música no topo do post (nome + ícone de volume) */
+/* Barra de música no topo do post — mini player estilo Spotify */
 .post-music {
   display: flex;
   align-items: center;
-  gap: 6px;
-  background: #111;
-  color: var(--neon);
-  font-family: "Comic Neue", "Comic Sans MS", cursive;
-  font-weight: 700;
-  font-size: 0.72rem;
-  padding: 4px 10px;
-  border-radius: 999px;
-  margin-bottom: 8px;
+  gap: 10px;
+  background: linear-gradient(135deg, #1a1a1a 0%, #121212 100%);
+  border-radius: 10px;
+  padding: 8px 10px;
+  margin-bottom: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   max-width: 100%;
-  border: 1px solid rgba(57, 255, 20, 0.4);
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
-.post-music-ico {
-  font-size: 0.95rem;
-  animation: eqPulse 1s ease-in-out infinite;
+.post-music-cover {
+  width: 48px;
+  height: 48px;
+  border-radius: 6px;
+  object-fit: cover;
+  flex-shrink: 0;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
+}
+.post-music-cover--placeholder {
+  display: grid;
+  place-items: center;
+  background: linear-gradient(145deg, #1db954, #191414);
+  font-size: 1.15rem;
+}
+.post-music-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 .post-music-name {
+  font-family: Inter, Montserrat, sans-serif;
+  font-weight: 600;
+  font-size: 0.82rem;
+  color: #fff;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  line-height: 1.25;
 }
+.post-music-artist {
+  font-family: Inter, Montserrat, sans-serif;
+  font-size: 0.72rem;
+  color: #b3b3b3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.25;
+}
+.post-music-duration {
+  flex-shrink: 0;
+  font-family: Inter, Montserrat, sans-serif;
+  font-size: 0.68rem;
+  color: #b3b3b3;
+  font-variant-numeric: tabular-nums;
+  padding-left: 4px;
+}
+.post-music-eq {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 14px;
+  flex-shrink: 0;
+  margin-left: 2px;
+  opacity: 0.35;
+  transition: opacity 0.2s ease;
+}
+.post-music-eq span {
+  display: block;
+  width: 3px;
+  height: 6px;
+  border-radius: 1px;
+  background: #1db954;
+}
+.post-music-eq span:nth-child(2) { height: 10px; }
+.post-music-eq span:nth-child(3) { height: 7px; }
 .post-music.is-playing {
-  background: #0d2b0d;
-  border-color: var(--neon);
-  box-shadow: 0 0 14px rgba(57, 255, 20, 0.45);
-  color: #fff;
+  border-color: rgba(29, 185, 84, 0.55);
+  box-shadow: 0 0 16px rgba(29, 185, 84, 0.28);
 }
-.post-music.is-playing .post-music-ico {
-  animation: eqPulse 0.45s ease-in-out infinite;
+.post-music.is-playing .post-music-eq {
+  opacity: 1;
 }
-@keyframes eqPulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.18); }
+.post-music.is-playing .post-music-eq span {
+  animation: eqBar 0.55s ease-in-out infinite alternate;
+}
+.post-music.is-playing .post-music-eq span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.post-music.is-playing .post-music-eq span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+@keyframes eqBar {
+  from { transform: scaleY(0.45); }
+  to { transform: scaleY(1.15); }
+}
+.post-music--loading .post-music-cover--placeholder {
+  animation: musicPulse 1.2s ease-in-out infinite;
+}
+@keyframes musicPulse {
+  0%, 100% { opacity: 0.65; }
+  50% { opacity: 1; }
+}
+.post-music--modal {
+  background: linear-gradient(135deg, #222 0%, #181818 100%);
+  border-color: rgba(57, 255, 20, 0.25);
+}
+
+/* Fallback iOS: botão discreto pra liberar o som */
+.audio-unlock {
+  position: fixed;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  z-index: 58;
+  display: none;
+  border: none;
+  cursor: pointer;
+  background: var(--neon);
+  color: #000;
+  font-family: "Comic Neue", "Comic Sans MS", cursive;
+  font-weight: 700;
+  font-size: 0.85rem;
+  padding: 10px 18px;
+  border-radius: 999px;
+  box-shadow: 0 0 22px rgba(57, 255, 20, 0.7);
+}
+.audio-unlock.show {
+  display: block;
+  animation: auPulse 1.4s ease-in-out infinite;
+}
+@keyframes auPulse {
+  0%, 100% { transform: translateX(-50%) scale(1); box-shadow: 0 0 18px rgba(57, 255, 20, 0.6); }
+  50% { transform: translateX(-50%) scale(1.05); box-shadow: 0 0 34px rgba(57, 255, 20, 0.95); }
+}
+
+/* Mini-player do canto: usa o MESMO .post-music do card.
+   O iframe do Spotify vira só motor de áudio, escondido fora da tela. */
+.np-audio-engine {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  width: 300px;
+  height: 80px;
+  pointer-events: none;
+}
+#np-visualizer .post-music {
+  margin-bottom: 0;
 }
 
 /* Comentários estilo Instagram */
@@ -229,28 +353,119 @@ body {
   margin-right: 5px;
 }
 
-/* Modal do post: corpo rolável + barra de comentar fixa embaixo */
+/* Modal do post: mídia fixa + corpo rolável + barra de comentar fixa embaixo */
 #card-modal .modal-card {
   display: flex;
   flex-direction: column;
-  max-height: 90vh;
+  max-height: min(90dvh, 100%);
+  overflow: hidden;
+  border-radius: inherit;
 }
 #card-modal-body {
   display: flex;
   flex-direction: column;
-  flex: 1;
+  flex: 1 1 auto;
   min-height: 0;
+  overflow: hidden;
+}
+.card-modal-header {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 52px 12px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: #18181b;
+}
+.card-modal-avatar {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-family: Anton, Impact, sans-serif;
+  background: linear-gradient(135deg, var(--shock), #9d00ff);
+  color: #fff;
+  font-size: 0.95rem;
+}
+.card-modal-author {
+  font-family: Anton, Impact, sans-serif;
+  font-size: 1.05rem;
+  color: var(--shock);
+  line-height: 1.2;
+  word-break: break-word;
+}
+.card-modal-media {
+  flex: 0 0 auto;
+  max-height: min(42dvh, 320px);
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.card-modal-media img {
+  width: 100%;
+  max-height: min(42dvh, 320px);
+  object-fit: contain;
+  display: block;
 }
 .card-modal-scroll {
   overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   min-height: 0;
-  flex: 1;
+  flex: 1 1 auto;
+  padding: 16px;
+}
+.card-modal-message {
+  font-family: "Comic Neue", "Comic Sans MS", cursive;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #f4f4f5;
+  word-break: break-word;
+}
+.card-modal-reactions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+.card-modal-react-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: 0.95rem;
+  color: #e4e4e7;
+  transition: transform 0.1s ease, background 0.15s ease;
+}
+.card-modal-react-btn:hover {
+  background: rgba(255, 20, 147, 0.15);
+  border-color: rgba(255, 20, 147, 0.4);
+}
+.card-modal-react-btn:active {
+  transform: scale(1.08);
+}
+.card-modal-comments-title {
+  font-family: Anton, Impact, sans-serif;
+  font-size: 1.1rem;
+  color: #00f0ff;
+  margin: 18px 0 10px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 .card-modal-footer {
+  flex: 0 0 auto;
   display: flex;
   gap: 8px;
   align-items: center;
-  padding: 10px 14px;
+  padding: 10px 14px calc(10px + env(safe-area-inset-bottom, 0px));
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   background: #18181b;
 }
@@ -349,9 +564,29 @@ body {
   #card-modal .modal-card {
     width: 100%;
     max-width: 100%;
-    max-height: 92vh;
+    max-height: 92dvh;
+    height: 92dvh;
     border-radius: 18px 18px 0 0;
     animation: sheetUp 0.3s ease;
+  }
+  #card-modal .modal-card::before {
+    content: '';
+    display: block;
+    width: 36px;
+    height: 4px;
+    margin: 8px auto 0;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.25);
+    flex-shrink: 0;
+  }
+  .card-modal-header {
+    padding-top: 8px;
+  }
+  .card-modal-media {
+    max-height: min(38dvh, 280px);
+  }
+  .card-modal-media img {
+    max-height: min(38dvh, 280px);
   }
 }
 @keyframes sheetUp {

@@ -35,8 +35,19 @@
     async add(entry) {
       const track_uri = entry.music && window.RianMusic ? RianMusic.toUri(entry.music) : '';
       let track_name = '';
+      let track_artist = '';
+      let track_image = '';
+      let track_duration_ms = 0;
       if (track_uri && window.RianMusic) {
-        try { track_name = await RianMusic.resolveName(track_uri); } catch (e) {}
+        try {
+          const meta = await RianMusic.resolveTrack(track_uri);
+          if (meta) {
+            track_name = meta.name || '';
+            track_artist = meta.artist || '';
+            track_image = meta.image || '';
+            track_duration_ms = meta.duration_ms || 0;
+          }
+        } catch (e) {}
       }
       if (supa) {
         let photo_url = null;
@@ -54,6 +65,9 @@
             photo_url,
             track_uri,
             track_name,
+            track_artist,
+            track_image,
+            track_duration_ms,
             reactions: { '❤️': 0, '😂': 0, '🚀': 0 },
             comments: [],
           })
@@ -71,6 +85,9 @@
         photo_url: entry.dataUrl || null,
         track_uri,
         track_name,
+        track_artist,
+        track_image,
+        track_duration_ms,
         reactions: { '❤️': 0, '😂': 0, '🚀': 0 },
         comments: [],
         created_at: Date.now(),
@@ -129,6 +146,29 @@
     return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   }
 
+  function postMusicHtml(item, extraClass = '') {
+    const loaded = Boolean(item.track_name);
+    const name = loaded ? escapeHtml(item.track_name) : 'Carregando…';
+    const artist = item.track_artist ? escapeHtml(item.track_artist) : 'Spotify';
+    const duration = item.track_duration_ms && window.RianMusic
+      ? RianMusic.formatDuration(item.track_duration_ms)
+      : '';
+    const image = item.track_image ? escapeHtml(item.track_image) : '';
+
+    return `
+      <div class="post-music ${loaded ? '' : 'post-music--loading'} ${extraClass}" data-music-id="${item.id}">
+        ${image
+          ? `<img class="post-music-cover" src="${image}" alt="" loading="lazy" />`
+          : '<div class="post-music-cover post-music-cover--placeholder" aria-hidden="true">🎵</div>'}
+        <div class="post-music-body">
+          <span class="post-music-name">${name}</span>
+          <span class="post-music-artist">${artist}</span>
+        </div>
+        ${duration ? `<span class="post-music-duration">${duration}</span>` : ''}
+        <span class="post-music-eq" aria-hidden="true"><span></span><span></span><span></span></span>
+      </div>`;
+  }
+
   function cardHtml(item) {
     const hasPhoto = Boolean(item.photo_url);
     const hasMusic = Boolean(item.track_uri);
@@ -137,10 +177,9 @@
       `<button class="react-btn" data-react="${e}" data-id="${item.id}">${e} <span data-count="${e}">${(item.reactions && item.reactions[e]) || 0}</span></button>`
     ).join('');
 
-    const musicName = item.track_name ? escapeHtml(item.track_name) : 'música';
     return `
       <article class="polaroid ${hasPhoto ? '' : 'notecard'}" data-id="${item.id}">
-        ${hasMusic ? `<div class="post-music"><span class="post-music-ico">🔊</span><span class="post-music-name" data-music-id="${item.id}">${musicName}</span></div>` : ''}
+        ${hasMusic ? postMusicHtml(item) : ''}
         ${hasPhoto ? `<img src="${item.photo_url}" alt="foto de ${escapeHtml(item.name)}" loading="lazy" />` : ''}
         <p class="note">${escapeHtml(item.message)}</p>
         <p class="author">— ${escapeHtml(item.name)}</p>
@@ -162,10 +201,11 @@
       if (supa) RianFX.toast('Deu ruim ao carregar o mural 😬');
     }
     setDbStatus(connected);
+    if (window.RianMusic) RianMusic.pause();
     grid.innerHTML = items.map(cardHtml).join('');
     empty.classList.toggle('hidden', items.length > 0);
     wireCards(items);
-    fillMusicNames(items);
+    fillMusicMeta(items);
     setupFeedAutoplay(items);
 
     // Fotos do mural também flutuam no fundo
@@ -174,21 +214,65 @@
     }
   }
 
-  /* Preenche o nome da música no topo dos posts que ainda não têm */
-  function fillMusicNames(items) {
+  function needsMusicMeta(item) {
+    return !item.track_artist || !item.track_image;
+  }
+
+  function applyMusicMeta(item, root = grid) {
+    const el = root?.querySelector(`.post-music[data-music-id="${item.id}"]`);
+    if (!el) return;
+
+    el.classList.remove('post-music--loading');
+
+    const nameEl = el.querySelector('.post-music-name');
+    const artistEl = el.querySelector('.post-music-artist');
+    if (nameEl && item.track_name) nameEl.textContent = item.track_name;
+    if (artistEl && item.track_artist) artistEl.textContent = item.track_artist;
+
+    if (item.track_image) {
+      const placeholder = el.querySelector('.post-music-cover--placeholder');
+      const cover = el.querySelector('img.post-music-cover');
+      if (placeholder) {
+        const img = document.createElement('img');
+        img.className = 'post-music-cover';
+        img.src = item.track_image;
+        img.alt = '';
+        img.loading = 'lazy';
+        placeholder.replaceWith(img);
+      } else if (cover) {
+        cover.src = item.track_image;
+      }
+    }
+
+    if (item.track_duration_ms && window.RianMusic) {
+      const duration = RianMusic.formatDuration(item.track_duration_ms);
+      let durEl = el.querySelector('.post-music-duration');
+      if (!durEl && duration) {
+        durEl = document.createElement('span');
+        durEl.className = 'post-music-duration';
+        el.querySelector('.post-music')?.appendChild(durEl);
+      }
+      if (durEl) durEl.textContent = duration;
+    }
+  }
+
+  /* Preenche capa, artista e duração dos posts que ainda não têm metadados */
+  function fillMusicMeta(items) {
     if (!window.RianMusic) return;
     items.forEach(async (it) => {
-      if (!it.track_uri || it.track_name) return;
-      const span = grid.querySelector(`.post-music-name[data-music-id="${it.id}"]`);
-      if (!span) return;
-      const name = await RianMusic.resolveName(it.track_uri);
-      if (name) { it.track_name = name; span.textContent = name; }
+      if (!it.track_uri || !needsMusicMeta(it)) return;
+      const meta = await RianMusic.resolveTrack(it.track_uri);
+      if (!meta?.name) return;
+      it.track_name = meta.name;
+      it.track_artist = meta.artist || it.track_artist || '';
+      it.track_image = meta.image || it.track_image || '';
+      it.track_duration_ms = meta.duration_ms || it.track_duration_ms || 0;
+      applyMusicMeta(it);
     });
   }
 
   /* MOBILE: feed estilo Instagram — toca a música do post conforme rola por ele */
   let feedObserver = null;
-  let feedHintShown = false;
   let activeMusicEl = null;
 
   function setActivePostMusic(el) {
@@ -225,10 +309,6 @@
         if (item && String(item.id) !== activeId) {
           activeId = String(item.id);
           setActivePostMusic(best);
-          if (!RianMusic.isUnlocked() && !feedHintShown) {
-            feedHintShown = true;
-            RianFX.toast('🔊 Toque na tela pra liberar o som dos posts');
-          }
           RianMusic.play(item.track_uri, item.name, { showWidget: false });
         }
       } else if (activeId) {
@@ -264,8 +344,14 @@
 
       // DESKTOP: música toca no hover do post (no mobile é por scroll — ver setupFeedAutoplay)
       if (item.track_uri && window.RianMusic && window.matchMedia('(hover: hover)').matches) {
-        el.addEventListener('mouseenter', () => RianMusic.play(item.track_uri, item.name));
-        el.addEventListener('mouseleave', () => RianMusic.pause());
+        el.addEventListener('mouseenter', () => {
+          RianMusic.play(item.track_uri, item.name);
+          el.querySelector('.post-music')?.classList.add('is-playing');
+        });
+        el.addEventListener('mouseleave', () => {
+          RianMusic.pause();
+          el.querySelector('.post-music')?.classList.remove('is-playing');
+        });
       }
     });
 
@@ -298,29 +384,45 @@
 
   function openCardModal(item) {
     const body = document.getElementById('card-modal-body');
-    const musicName = item.track_name ? escapeHtml(item.track_name) : 'música';
-    body.innerHTML = `
-      <div class="card-modal-scroll p-6">
-        ${item.track_uri ? `<div class="post-music mb-3"><span class="post-music-ico">🔊</span><span class="post-music-name">${musicName}</span></div>` : ''}
-        ${item.photo_url ? `<img src="${item.photo_url}" class="w-full max-h-[50vh] object-contain bg-black rounded-lg" alt="foto" />` : ''}
-        <p class="font-comic text-lg text-white mt-4">${escapeHtml(item.message)}</p>
-        <p class="font-meme text-2xl text-shock mt-3">— ${escapeHtml(item.name)}</p>
-        <div class="flex gap-4 mt-4 text-white/80">
-          ${REACTIONS.map((e) => `${e} ${(item.reactions && item.reactions[e]) || 0}`).join(' &nbsp; ')}
-        </div>
+    const initial = escapeHtml((item.name || '?').charAt(0).toUpperCase());
+    const reactBtns = REACTIONS.map((e) =>
+      `<button type="button" class="card-modal-react-btn react-btn" data-react="${e}" data-id="${item.id}">${e} <span data-count="${e}">${(item.reactions && item.reactions[e]) || 0}</span></button>`
+    ).join('');
 
-        <hr class="border-white/10 my-5" />
-        <h4 class="font-meme text-xl text-cyber mb-3">💬 Comentários</h4>
+    body.innerHTML = `
+      <div class="card-modal-header">
+        <div class="card-modal-avatar">${initial}</div>
+        <p class="card-modal-author">${escapeHtml(item.name)}</p>
+      </div>
+      ${item.photo_url ? `<div class="card-modal-media"><img src="${item.photo_url}" alt="foto de ${escapeHtml(item.name)}" /></div>` : ''}
+      <div class="card-modal-scroll">
+        ${item.track_uri ? postMusicHtml(item, 'post-music--modal mb-3') : ''}
+        <p class="card-modal-message">${escapeHtml(item.message)}</p>
+        <div class="card-modal-reactions" data-reactions>${reactBtns}</div>
+        <h4 class="card-modal-comments-title">💬 Comentários</h4>
         <div id="comments-list" class="space-y-1">${commentsHtml(item.comments)}</div>
       </div>
 
       <form id="comment-form" class="card-modal-footer">
         <input id="c-name" required maxlength="40" placeholder="Teu nome"
-               class="w-28 shrink-0 bg-black/60 border border-white/20 focus:border-cyber rounded-full px-3 py-2 outline-none text-sm" />
+               class="w-24 sm:w-28 shrink-0 bg-black/60 border border-white/20 focus:border-cyber rounded-full px-3 py-2 outline-none text-sm" />
         <input id="c-text" required maxlength="200" placeholder="Adicione um comentário..."
-               class="flex-1 bg-black/60 border border-white/20 focus:border-cyber rounded-full px-3 py-2 outline-none text-sm" />
-        <button type="submit" class="text-cyber font-bold px-2 hover:text-neon transition active:scale-95">Postar</button>
+               class="flex-1 min-w-0 bg-black/60 border border-white/20 focus:border-cyber rounded-full px-3 py-2 outline-none text-sm" />
+        <button type="submit" class="shrink-0 text-cyber font-bold px-2 hover:text-neon transition active:scale-95">Postar</button>
       </form>`;
+
+    body.querySelectorAll('[data-react]').forEach((btn) => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const emoji = btn.dataset.react;
+        const reactions = await Store.react(item.id, emoji);
+        if (reactions) {
+          item.reactions = reactions;
+          btn.querySelector(`[data-count="${emoji}"]`).textContent = reactions[emoji];
+          RianFX.burst();
+        }
+      });
+    });
 
     // Comentar
     const form = body.querySelector('#comment-form');
@@ -340,6 +442,17 @@
     });
 
     window.openModal('card-modal');
+
+    if (item.track_uri && needsMusicMeta(item) && window.RianMusic) {
+      RianMusic.resolveTrack(item.track_uri).then((meta) => {
+        if (!meta?.name) return;
+        item.track_name = meta.name;
+        item.track_artist = meta.artist || '';
+        item.track_image = meta.image || '';
+        item.track_duration_ms = meta.duration_ms || 0;
+        applyMusicMeta(item, body);
+      });
+    }
 
     // Música também toca ao abrir o post
     if (item.track_uri && window.RianMusic) {

@@ -11,6 +11,9 @@ create table if not exists public.mural (
   photo_url text,
   track_uri text,                       -- música do Spotify anexada ao post (spotify:track:ID)
   track_name text,                      -- nome da música (pra mostrar no topo do post)
+  track_artist text,                    -- artista da faixa
+  track_image text,                     -- capa do álbum
+  track_duration_ms integer,            -- duração em milissegundos
   reactions jsonb not null default '{"❤️":0,"😂":0,"🚀":0}'::jsonb,
   comments jsonb not null default '[]'::jsonb,   -- comentários de outras pessoas
   created_at timestamptz not null default now()
@@ -19,6 +22,9 @@ create table if not exists public.mural (
 -- Se a tabela já existia, garante as colunas novas:
 alter table public.mural add column if not exists track_uri text;
 alter table public.mural add column if not exists track_name text;
+alter table public.mural add column if not exists track_artist text;
+alter table public.mural add column if not exists track_image text;
+alter table public.mural add column if not exists track_duration_ms integer;
 alter table public.mural add column if not exists comments jsonb not null default '[]'::jsonb;
 
 -- 2) Liga o Row Level Security
