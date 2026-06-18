@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>O RIAN FEZ 18! 🔞 — Aniversário do Cria</title>
+  <meta name="description" content="Site colaborativo de zoeira pros 18 anos do Rian Baccarin. Posta tua mensagem, mete um funk e faz o quiz." />
+  <link rel="icon" href="image.png" type="image/png" />
+
+  <!-- Tailwind CSS (CDN) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            neon: '#39FF14',
+            shock: '#FF1493',
+            roxo: '#9D00FF',
+            cyber: '#00F0FF',
+            zap: '#FFE600',
+          },
+          fontFamily: {
+            meme: ['Impact', '"Anton"', 'sans-serif'],
+            comic: ['"Comic Neue"', '"Comic Sans MS"', 'cursive'],
+            body: ['Inter', 'Montserrat', 'sans-serif'],
+          },
+          keyframes: {
+            floaty: { '0%,100%': { transform: 'translateY(0) rotate(var(--rot,0deg))' }, '50%': { transform: 'translateY(-18px) rotate(var(--rot,0deg))' } },
+            glitch: { '0%,100%': { textShadow: '0 0 0 transparent' }, '20%': { textShadow: '-2px 0 #FF1493, 2px 0 #00F0FF' }, '40%': { textShadow: '2px 0 #39FF14, -2px 0 #9D00FF' } },
+            shake: { '0%,100%': { transform: 'translateX(0) rotate(0)' }, '25%': { transform: 'translateX(-3px) rotate(-2deg)' }, '75%': { transform: 'translateX(3px) rotate(2deg)' } },
+          },
+          animation: {
+            floaty: 'floaty 6s ease-in-out infinite',
+            glitch: 'glitch 2.5s steps(2) infinite',
+            shake: 'shake 0.4s ease-in-out',
+          },
+        },
+      },
+    };
+  </script>
+
+  <!-- Fontes -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Comic+Neue:wght@400;700&family=Inter:wght@400;600;800&family=Montserrat:wght@600;800&display=swap" rel="stylesheet" />
+
+  <!-- canvas-confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
+  <!-- Supabase JS (usado só quando você plugar as credenciais) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+
+<body class="bg-black text-white font-body overflow-x-hidden selection:bg-shock selection:text-black">
+
+  <!-- Stickers de fundo (decorativos) -->
+  <div id="stickers" aria-hidden="true" class="pointer-events-none fixed inset-0 -z-10 overflow-hidden"></div>
+
+  <!-- ===================== NAV ===================== -->
+  <header class="sticky top-0 z-40 backdrop-blur-md bg-black/70 border-b border-neon/30">
+    <nav class="max-w-6xl mx-auto flex items-center justify-between px-4 py-3">
+      <a href="#hero" class="font-meme text-2xl tracking-wider text-neon drop-shadow-[0_0_8px_#39FF14]">RIAN<span class="text-shock">18</span></a>
+      <ul class="hidden md:flex gap-6 text-sm font-semibold uppercase tracking-wide">
+        <li><a class="hover:text-neon transition" href="#mural">Mural</a></li>
+        <li><a class="hover:text-shock transition" href="#baile">Baile Funk</a></li>
+        <li><a class="hover:text-cyber transition" href="#quiz">Quiz</a></li>
+      </ul>
+      <button id="nav-cta" class="bg-shock hover:bg-neon hover:text-black text-black font-bold px-4 py-2 rounded-full text-sm transition active:scale-95">
+        ✍️ Deixar zoeira
+      </button>
+    </nav>
+  </header>
+
+  <!-- ===================== HERO ===================== -->
+  <section id="hero" class="relative min-h-[92vh] flex flex-col items-center justify-center text-center px-4 py-16">
+    <div class="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_50%_30%,rgba(157,0,255,0.25),transparent_60%)]"></div>
+
+    <p class="font-comic text-shock text-lg md:text-xl mb-2 animate-shake">🚨 ALERTA DE MAIORIDADE 🚨</p>
+
+    <h1 class="font-meme uppercase leading-[0.9] text-5xl sm:text-7xl md:text-8xl animate-glitch">
+      O RIAN<br />FEZ <span class="text-neon">18</span>! 🔞
+    </h1>
+    <p class="mt-4 font-comic text-xl md:text-2xl text-zap max-w-2xl">
+      O cria finalmente é maior de idade. Agora a culpa é dele mesmo. 💀
+    </p>
+
+    <!-- Foto recortada do Rian -->
+    <div class="relative my-8 animate-floaty" style="--rot:-2deg">
+      <div class="absolute -inset-4 bg-gradient-to-tr from-shock via-roxo to-cyber blur-2xl opacity-60 rounded-full"></div>
+      <img src="assets/img/rian-coroa.png" alt="Rian, o rei da coroa do McCafé"
+           class="relative w-56 sm:w-72 md:w-80 object-cover rounded-2xl border-4 border-neon shadow-[0_0_40px_#39FF14] rotate-1" />
+      <span class="absolute -top-4 -right-4 bg-zap text-black font-meme text-xl px-3 py-1 rounded-full rotate-12 shadow-lg">REI 👑</span>
+    </div>
+
+    <!-- Contador de vida -->
+    <div class="w-full max-w-3xl">
+      <p class="font-comic text-cyber text-sm md:text-base mb-3">⏱️ O Rian já sobreviveu a:</p>
+      <div id="countdown" class="grid grid-cols-4 gap-2 sm:gap-4 font-meme">
+        <div class="bg-white/5 border border-neon/40 rounded-xl py-3"><span id="cd-days" class="block text-2xl sm:text-4xl text-neon">0</span><span class="text-[10px] sm:text-xs text-white/60 uppercase tracking-widest">dias</span></div>
+        <div class="bg-white/5 border border-shock/40 rounded-xl py-3"><span id="cd-hours" class="block text-2xl sm:text-4xl text-shock">0</span><span class="text-[10px] sm:text-xs text-white/60 uppercase tracking-widest">horas</span></div>
+        <div class="bg-white/5 border border-roxo/40 rounded-xl py-3"><span id="cd-mins" class="block text-2xl sm:text-4xl text-roxo">0</span><span class="text-[10px] sm:text-xs text-white/60 uppercase tracking-widest">min</span></div>
+        <div class="bg-white/5 border border-cyber/40 rounded-xl py-3"><span id="cd-secs" class="block text-2xl sm:text-4xl text-cyber">0</span><span class="text-[10px] sm:text-xs text-white/60 uppercase tracking-widest">seg</span></div>
+      </div>
+    </div>
+
+    <button id="confetti-btn" class="mt-8 font-meme text-lg bg-neon text-black px-6 py-3 rounded-full hover:bg-shock hover:text-white transition active:scale-95 shadow-[0_0_25px_#39FF14]">
+      🎉 SOLTA O CONFETE
+    </button>
+  </section>
+
+  <!-- ===================== MURAL ===================== -->
+  <section id="mural" class="relative max-w-6xl mx-auto px-4 py-16">
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+      <div>
+        <h2 class="font-meme text-4xl md:text-6xl text-shock drop-shadow-[0_0_10px_#FF1493]">MURAL DE MEMÓRIAS</h2>
+        <p class="font-comic text-white/70 mt-1">Joga teu recado, foto e zoeira pro aniversariante. 📌</p>
+      </div>
+      <button id="open-form" class="self-start bg-neon text-black font-bold px-5 py-3 rounded-full hover:bg-shock hover:text-white transition active:scale-95">
+        ➕ Postar no mural
+      </button>
+    </div>
+
+    <!-- Aviso de modo (mock vs banco) -->
+    <div id="mural-status" class="mb-6 text-xs font-mono text-zap/80 bg-zap/10 border border-zap/30 rounded-lg px-3 py-2"></div>
+
+    <!-- Grid masonry -->
+    <div id="mural-grid" class="columns-1 sm:columns-2 lg:columns-3 gap-4 [column-fill:_balance]"></div>
+
+    <p id="mural-empty" class="hidden text-center font-comic text-white/50 py-10">Ninguém postou ainda... seja o primeiro a expor o Rian. 👀</p>
+  </section>
+
+  <!-- ===================== BAILE FUNK ===================== -->
+  <section id="baile" class="relative bg-gradient-to-b from-black via-roxo/10 to-black py-16">
+    <div class="max-w-6xl mx-auto px-4">
+      <h2 class="font-meme text-4xl md:text-6xl text-roxo drop-shadow-[0_0_10px_#9D00FF] text-center">O BAILE FUNK DO RIAN 🔊</h2>
+      <p class="font-comic text-white/70 mt-1 text-center mb-10">Sobe o som que hoje a casa cai. 🎶</p>
+
+      <div class="grid lg:grid-cols-2 gap-8 items-start">
+        <!-- Player Spotify -->
+        <div class="bg-white/5 border border-roxo/40 rounded-2xl p-4">
+          <h3 class="font-meme text-2xl text-cyber mb-3">🎧 A Playlist</h3>
+          <div id="spotify-embed" class="rounded-xl overflow-hidden"></div>
+          <a id="add-funk" target="_blank" rel="noopener"
+             class="mt-4 block text-center font-meme text-lg bg-neon text-black px-6 py-4 rounded-full hover:bg-shock hover:text-white transition active:scale-95 shadow-[0_0_25px_#39FF14]">
+            🎵 ADICIONAR UM FUNK NO BAILE
+          </a>
+        </div>
+
+        <!-- Soundboard -->
+        <div class="bg-white/5 border border-shock/40 rounded-2xl p-4">
+          <div class="flex items-center justify-between mb-1">
+            <h3 class="font-meme text-2xl text-shock">🎚️ Mesa de Efeitos</h3>
+            <span id="sb-now" class="font-comic text-xs text-neon opacity-0 transition-opacity">▶ tocando...</span>
+          </div>
+          <p class="font-comic text-white/60 text-sm mb-4">Aperta e solta o grito. (Som ligado no celular, hein 🔈)</p>
+
+          <!-- Pads de efeito -->
+          <div id="soundboard" class="grid grid-cols-2 sm:grid-cols-3 gap-3"></div>
+
+          <!-- Controles -->
+          <div class="flex flex-wrap items-center gap-3 mt-4">
+            <button id="sb-random" class="flex-1 font-meme text-base bg-roxo text-white px-4 py-3 rounded-xl hover:bg-neon hover:text-black transition active:scale-95">🎲 DJ RIAN (aleatório)</button>
+            <button id="sb-stop" class="font-meme text-base bg-zinc-800 text-white px-4 py-3 rounded-xl hover:bg-shock hover:text-black transition active:scale-95">⏹️ PARAR</button>
+          </div>
+          <div class="flex items-center gap-3 mt-3">
+            <span class="text-white/60 text-sm">🔉</span>
+            <input id="sb-volume" type="range" min="0" max="1" step="0.05" value="0.8" class="flex-1 accent-shock" />
+            <span class="text-white/60 text-sm">🔊</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== QUIZ ===================== -->
+  <section id="quiz" class="max-w-3xl mx-auto px-4 py-16">
+    <h2 class="font-meme text-4xl md:text-6xl text-cyber drop-shadow-[0_0_10px_#00F0FF] text-center">O QUANTO VOCÊ CONHECE O RIAN?</h2>
+    <p class="font-comic text-white/70 mt-1 text-center mb-8">5 perguntas. Sem cola. Bora ver se tu é parça mesmo. 🤨</p>
+
+    <div id="quiz-box" class="bg-white/5 border border-cyber/40 rounded-2xl p-6 min-h-[260px]"></div>
+  </section>
+
+  <!-- ===================== FOOTER ===================== -->
+  <footer class="border-t border-neon/30 py-8 text-center font-comic text-white/50 text-sm">
+    Feito com 🍫 caramelo e zoeira pros 18 do <span class="text-neon">Rian Baccarin</span> · 17/06 ·
+    <button id="footer-confetti" class="underline hover:text-shock">mais confete?</button>
+  </footer>
+
+  <!-- ===================== MODAL: FORM DE ENVIO ===================== -->
+  <div id="form-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+    <div class="modal-card relative w-full max-w-md bg-zinc-900 border-2 border-neon rounded-2xl p-6 shadow-[0_0_40px_#39FF14]">
+      <button data-close class="absolute top-3 right-4 text-white/60 hover:text-shock text-2xl">×</button>
+      <h3 class="font-meme text-3xl text-neon mb-1">DEIXA TUA MARCA 🖊️</h3>
+      <p class="font-comic text-white/60 text-sm mb-4">Capricha na zoeira (com carinho).</p>
+
+      <form id="mural-form" class="space-y-4">
+        <div>
+          <label class="block text-xs uppercase tracking-wide text-white/70 mb-1" for="f-name">Teu nome *</label>
+          <input id="f-name" name="name" required maxlength="40" placeholder="Ex: Zé da Esquina"
+                 class="w-full bg-black/60 border border-white/20 focus:border-neon rounded-lg px-3 py-2 outline-none" />
+        </div>
+        <div>
+          <label class="block text-xs uppercase tracking-wide text-white/70 mb-1" for="f-msg">Mensagem / zoeira *</label>
+          <textarea id="f-msg" name="message" required maxlength="280" rows="3" placeholder="Parabéns meu cria, agora paga tua conta sozinho 😂"
+                    class="w-full bg-black/60 border border-white/20 focus:border-neon rounded-lg px-3 py-2 outline-none resize-none"></textarea>
+        </div>
+        <div>
+          <label class="block text-xs uppercase tracking-wide text-white/70 mb-1" for="f-photo">Foto (opcional)</label>
+          <input id="f-photo" name="photo" type="file" accept="image/*"
+                 class="w-full text-sm text-white/70 file:mr-3 file:py-2 file:px-3 file:rounded-full file:border-0 file:bg-shock file:text-black file:font-bold hover:file:bg-neon" />
+          <img id="f-preview" class="hidden mt-3 rounded-lg max-h-40 mx-auto border border-white/20" alt="prévia" />
+        </div>
+        <div>
+          <label class="block text-xs uppercase tracking-wide text-white/70 mb-1" for="f-music">🎵 Música do baile (opcional)</label>
+          <input id="f-music" name="music" type="url" placeholder="Cola o link de uma música do Spotify"
+                 class="w-full bg-black/60 border border-white/20 focus:border-neon rounded-lg px-3 py-2 outline-none" />
+          <p class="text-[11px] text-white/40 mt-1">No Spotify: música → ⋯ → Compartilhar → Copiar link. Toca quando passarem o mouse no teu post. 🔊</p>
+        </div>
+        <button type="submit" class="w-full font-meme text-xl bg-neon text-black py-3 rounded-full hover:bg-shock hover:text-white transition active:scale-95">
+          🚀 MANDAR PRO MURAL
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===================== MODAL: CARD EXPANDIDO ===================== -->
+  <div id="card-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/90 backdrop-blur-sm">
+    <div class="modal-card relative w-full max-w-2xl bg-zinc-900 border-2 border-shock rounded-2xl overflow-hidden shadow-[0_0_40px_#FF1493]">
+      <button data-close class="absolute top-3 right-4 z-10 text-white/80 hover:text-neon text-3xl">×</button>
+      <div id="card-modal-body"></div>
+    </div>
+  </div>
+
+  <!-- ===================== TOAST ===================== -->
+  <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] hidden">
+    <div class="bg-neon text-black font-bold px-5 py-3 rounded-full shadow-[0_0_30px_#39FF14] font-comic"></div>
+  </div>
+
+  <!-- Cursor customizado -->
+  <div id="cursor" aria-hidden="true" class="pointer-events-none fixed z-[70] hidden md:block text-2xl select-none">🕶️</div>
+
+  <!-- Mini-player "tocando agora" (música anexada aos posts do mural) -->
+  <div id="now-playing" class="fixed bottom-4 left-4 z-[55] w-[320px] max-w-[85vw] transition-all duration-300 opacity-0 translate-y-6 pointer-events-none">
+    <div class="bg-zinc-900/95 border-2 border-neon rounded-2xl p-2 shadow-[0_0_30px_#39FF14]">
+      <p class="font-comic text-xs text-neon px-2 pt-1 pb-2 flex items-center gap-1">
+        <span class="animate-pulse">🔊</span> Tocando do post de <span id="np-author" class="font-bold">…</span>
+      </p>
+      <div id="hover-player"></div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/config.js"></script>
+  <script src="js/effects.js"></script>
+  <script src="js/music.js"></script>
+  <script src="js/countdown.js"></script>
+  <script src="js/soundboard.js"></script>
+  <script src="js/quiz.js"></script>
+  <script src="js/mural.js"></script>
+  <script src="js/main.js"></script>
+  <!-- Spotify IFrame API (permite tocar a música via JS no hover/abertura) -->
+  <script src="https://open.spotify.com/embed/iframe-api/v1" async></script>
+</body>
+</html>

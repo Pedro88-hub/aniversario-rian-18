@@ -1,0 +1,321 @@
+/* ===== Base ===== */
+:root {
+  --neon: #39ff14;
+  --shock: #ff1493;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-image:
+    radial-gradient(circle at 20% 10%, rgba(255, 20, 147, 0.08), transparent 40%),
+    radial-gradient(circle at 80% 90%, rgba(57, 255, 20, 0.08), transparent 40%);
+  background-attachment: fixed;
+}
+
+/* Esconde cursor padrão só no desktop (onde o custom aparece) */
+@media (hover: hover) and (pointer: fine) {
+  body,
+  a,
+  button,
+  input,
+  textarea {
+    cursor: none;
+  }
+}
+
+/* ===== Cursor customizado ===== */
+#cursor {
+  transform: translate(-50%, -50%);
+  transition: transform 0.08s ease-out;
+  filter: drop-shadow(0 0 6px var(--neon));
+}
+#cursor.click {
+  transform: translate(-50%, -50%) scale(1.4) rotate(-15deg);
+}
+
+/* ===== Scrollbar ===== */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #000;
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(var(--neon), var(--shock));
+  border-radius: 10px;
+}
+
+/* ===== Stickers de fundo ===== */
+.sticker {
+  position: absolute;
+  font-size: clamp(2rem, 6vw, 4.5rem);
+  opacity: 0.12;
+  user-select: none;
+  animation: stickerFloat var(--dur, 14s) ease-in-out infinite;
+}
+@keyframes stickerFloat {
+  0%, 100% { transform: translateY(0) rotate(var(--rot, 0deg)); }
+  50% { transform: translateY(-30px) rotate(calc(var(--rot, 0deg) + 8deg)); }
+}
+
+/* Fotos do Rian flutuando no fundo */
+.sticker-photo {
+  width: clamp(70px, 11vw, 150px);
+  height: auto;
+  opacity: 0.16;
+  border-radius: 12px;
+  border: 2px solid rgba(57, 255, 20, 0.5);
+  box-shadow: 0 0 18px rgba(255, 20, 147, 0.35);
+  filter: saturate(1.1);
+}
+
+/* ===== Cards do mural (polaroid) ===== */
+.polaroid {
+  break-inside: avoid;
+  margin-bottom: 1rem;
+  background: #fafafa;
+  color: #111;
+  padding: 0.75rem 0.75rem 1rem;
+  border-radius: 4px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  cursor: pointer;
+}
+.polaroid:nth-child(3n) { transform: rotate(-2deg); }
+.polaroid:nth-child(3n+1) { transform: rotate(1.5deg); }
+.polaroid:nth-child(3n+2) { transform: rotate(-1deg); }
+.polaroid:hover {
+  transform: rotate(0deg) scale(1.03);
+  box-shadow: 0 0 30px var(--neon);
+  z-index: 5;
+}
+.polaroid img {
+  width: 100%;
+  display: block;
+  border-radius: 2px;
+  object-fit: cover;
+}
+.polaroid .note {
+  font-family: "Comic Neue", "Comic Sans MS", cursive;
+  font-size: 0.95rem;
+  margin-top: 0.6rem;
+  word-break: break-word;
+}
+.polaroid .author {
+  font-family: Anton, Impact, sans-serif;
+  letter-spacing: 0.5px;
+  margin-top: 0.4rem;
+  color: #d6006e;
+}
+
+/* Card sem foto (bloco de nota) */
+.notecard {
+  background: repeating-linear-gradient(#fff8b0, #fff8b0 27px, #ffe98a 28px);
+}
+
+.polaroid {
+  position: relative;
+}
+
+/* Barra de música no topo do post (nome + ícone de volume) */
+.post-music {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #111;
+  color: var(--neon);
+  font-family: "Comic Neue", "Comic Sans MS", cursive;
+  font-weight: 700;
+  font-size: 0.72rem;
+  padding: 4px 10px;
+  border-radius: 999px;
+  margin-bottom: 8px;
+  max-width: 100%;
+  border: 1px solid rgba(57, 255, 20, 0.4);
+}
+.post-music-ico {
+  font-size: 0.95rem;
+  animation: eqPulse 1s ease-in-out infinite;
+}
+.post-music-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+@keyframes eqPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.18); }
+}
+
+/* Comentários estilo Instagram */
+.ig-comment {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 7px 0;
+}
+.ig-avatar {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-family: Anton, Impact, sans-serif;
+  background: linear-gradient(135deg, var(--shock), #9d00ff);
+  color: #fff;
+  font-size: 0.85rem;
+}
+.ig-comment-text {
+  font-size: 0.9rem;
+  color: #e8e8e8;
+  line-height: 1.35;
+  word-break: break-word;
+}
+.ig-comment-name {
+  font-weight: 700;
+  color: #fff;
+  margin-right: 5px;
+}
+
+/* Modal do post: corpo rolável + barra de comentar fixa embaixo */
+#card-modal .modal-card {
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+}
+#card-modal-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+.card-modal-scroll {
+  overflow-y: auto;
+  min-height: 0;
+  flex: 1;
+}
+.card-modal-footer {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 10px 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: #18181b;
+}
+
+/* ===== Botões de reação ===== */
+.react-btn {
+  transition: transform 0.1s ease;
+}
+.react-btn:active { transform: scale(1.4); }
+
+/* ===== Modais ===== */
+.modal-open { display: flex !important; }
+.modal-card {
+  animation: pop 0.25s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+}
+@keyframes pop {
+  from { transform: scale(0.85); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* ===== Soundboard (pads de DJ) ===== */
+.sb-btn {
+  background: linear-gradient(160deg, #1b1b1b, #0c0c0c);
+  border: 2px solid var(--shock);
+  border-radius: 0.9rem;
+  padding: 0.9rem 0.4rem;
+  min-height: 84px;
+  font-family: Anton, Impact, sans-serif;
+  letter-spacing: 0.5px;
+  text-align: center;
+  transition: transform 0.1s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+.sb-btn:hover {
+  background: var(--shock);
+  color: #000;
+  box-shadow: 0 0 18px rgba(255, 20, 147, 0.6);
+}
+.sb-btn:active { transform: scale(0.94); }
+.sb-btn.playing {
+  background: var(--neon);
+  color: #000;
+  transform: scale(0.96);
+  box-shadow: 0 0 28px var(--neon);
+  animation: padPulse 0.5s ease-in-out infinite alternate;
+}
+@keyframes padPulse {
+  from { box-shadow: 0 0 20px var(--neon); }
+  to { box-shadow: 0 0 40px var(--neon), 0 0 60px var(--shock); }
+}
+
+/* ===== Quiz ===== */
+.quiz-opt {
+  width: 100%;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 0.75rem;
+  padding: 0.8rem 1rem;
+  margin-bottom: 0.6rem;
+  transition: all 0.12s ease;
+}
+.quiz-opt:hover { border-color: var(--neon); background: rgba(57, 255, 20, 0.1); }
+.quiz-opt.correct { border-color: var(--neon); background: rgba(57, 255, 20, 0.2); }
+.quiz-opt.wrong { border-color: var(--shock); background: rgba(255, 20, 147, 0.2); }
+.quiz-opt:disabled { cursor: default; }
+
+/* ===== Toast ===== */
+#toast.show {
+  display: block;
+  animation: toastIn 0.3s ease, toastOut 0.3s ease 3.2s forwards;
+}
+@keyframes toastIn { from { transform: translate(-50%, 40px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
+@keyframes toastOut { to { transform: translate(-50%, 40px); opacity: 0; } }
+
+/* ===== MOBILE: mural como feed do Instagram ===== */
+@media (max-width: 640px) {
+  /* Coluna única, cards retos (sem rotação) e cheios — cara de feed */
+  .polaroid,
+  .polaroid:nth-child(3n),
+  .polaroid:nth-child(3n + 1),
+  .polaroid:nth-child(3n + 2) {
+    transform: none;
+    width: 100%;
+    margin-bottom: 1.25rem;
+  }
+  .polaroid:hover {
+    transform: none;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  }
+
+  /* Modal vira bottom sheet (sobe de baixo, igual Instagram) */
+  #card-modal.modal-open {
+    align-items: flex-end;
+    padding: 0;
+  }
+  #card-modal .modal-card {
+    width: 100%;
+    max-width: 100%;
+    max-height: 92vh;
+    border-radius: 18px 18px 0 0;
+    animation: sheetUp 0.3s ease;
+  }
+}
+@keyframes sheetUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+/* Acessibilidade: respeita quem não quer animação */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
