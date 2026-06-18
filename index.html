@@ -62,7 +62,10 @@
   <!-- ===================== NAV ===================== -->
   <header class="sticky top-0 z-40 backdrop-blur-md bg-black/70 border-b border-neon/30">
     <nav class="max-w-6xl mx-auto flex items-center justify-between px-4 py-3">
-      <a href="#hero" class="font-meme text-2xl tracking-wider text-neon drop-shadow-[0_0_8px_#39FF14]">RIAN<span class="text-shock">18</span></a>
+      <div class="flex items-center gap-3">
+        <a href="#hero" class="font-meme text-2xl tracking-wider text-neon drop-shadow-[0_0_8px_#39FF14]">RIAN<span class="text-shock">18</span></a>
+        <span id="db-status" class="db-status is-offline" role="status" aria-live="polite" title="Desconectado"></span>
+      </div>
       <ul class="hidden md:flex gap-6 text-sm font-semibold uppercase tracking-wide">
         <li><a class="hover:text-neon transition" href="#mural">Mural</a></li>
         <li><a class="hover:text-shock transition" href="#baile">Baile Funk</a></li>
@@ -123,11 +126,8 @@
       </button>
     </div>
 
-    <!-- Aviso de modo (mock vs banco) -->
-    <div id="mural-status" class="mb-6 text-xs font-mono text-zap/80 bg-zap/10 border border-zap/30 rounded-lg px-3 py-2"></div>
-
     <!-- Grid masonry -->
-    <div id="mural-grid" class="columns-1 sm:columns-2 lg:columns-3 gap-4 [column-fill:_balance]"></div>
+    <div id="mural-grid" class="columns-1 sm:columns-2 lg:columns-3 [@media(hover:none)_and_(pointer:coarse)]:columns-1 gap-4 [column-fill:_balance]"></div>
 
     <p id="mural-empty" class="hidden text-center font-comic text-white/50 py-10">Ninguém postou ainda... seja o primeiro a expor o Rian. 👀</p>
   </section>
@@ -242,13 +242,17 @@
   <!-- Cursor customizado -->
   <div id="cursor" aria-hidden="true" class="pointer-events-none fixed z-[70] hidden md:block text-2xl select-none">🕶️</div>
 
-  <!-- Mini-player "tocando agora" (música anexada aos posts do mural) -->
-  <div id="now-playing" class="fixed bottom-4 left-4 z-[55] w-[320px] max-w-[85vw] transition-all duration-300 opacity-0 translate-y-6 pointer-events-none">
+  <!-- Controller Spotify (sempre no DOM, invisível — o widget visual é só no desktop) -->
+  <div id="spotify-host" class="sr-only" aria-hidden="true">
+    <div id="hover-player"></div>
+  </div>
+
+  <!-- Mini-player "tocando agora" — só no desktop (hover) -->
+  <div id="now-playing" class="fixed bottom-4 left-4 z-[55] w-[320px] max-w-[85vw] transition-all duration-300 opacity-0 translate-y-6 pointer-events-none max-md:!hidden" aria-hidden="true">
     <div class="bg-zinc-900/95 border-2 border-neon rounded-2xl p-2 shadow-[0_0_30px_#39FF14]">
       <p class="font-comic text-xs text-neon px-2 pt-1 pb-2 flex items-center gap-1">
         <span class="animate-pulse">🔊</span> Tocando do post de <span id="np-author" class="font-bold">…</span>
       </p>
-      <div id="hover-player"></div>
     </div>
   </div>
 

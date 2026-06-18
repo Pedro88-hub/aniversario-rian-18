@@ -62,14 +62,16 @@
     return m ? 'spotify:track:' + m[1] : '';
   }
 
+  const isCoarsePointer = () => matchMedia('(hover: none) and (pointer: coarse)').matches;
+
   function showWidget(author) {
-    if (!wrap) return;
+    if (isCoarsePointer() || !wrap) return;
     clearTimeout(hideTimer);
     if (authorEl) authorEl.textContent = author || '…';
     wrap.classList.remove('opacity-0', 'translate-y-6', 'pointer-events-none');
   }
   function hideWidget() {
-    if (!wrap) return;
+    if (!wrap || isCoarsePointer()) return;
     hideTimer = setTimeout(() => {
       wrap.classList.add('opacity-0', 'translate-y-6', 'pointer-events-none');
     }, 400);
@@ -91,10 +93,11 @@
     toUri,
     resolveName,
     isUnlocked: () => unlocked,
-    play(uriOrLink, author) {
+    play(uriOrLink, author, options = {}) {
       const uri = toUri(uriOrLink);
       if (!uri) return;
-      showWidget(author);
+      const showUi = options.showWidget !== false && !isCoarsePointer();
+      if (showUi) showWidget(author);
       if (!ready || !controller) { pendingUri = uri; return; }
       _play(uri);
     },
@@ -102,6 +105,7 @@
       pendingUri = null;
       if (ready && controller) { try { controller.pause(); } catch (e) {} }
       hideWidget();
+      window.dispatchEvent(new CustomEvent('rian-music-pause'));
     },
   };
 

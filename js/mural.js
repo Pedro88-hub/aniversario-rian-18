@@ -6,7 +6,7 @@
   const cfg = window.RIAN_CONFIG;
   const grid = document.getElementById('mural-grid');
   const empty = document.getElementById('mural-empty');
-  const statusEl = document.getElementById('mural-status');
+  const dbStatus = document.getElementById('db-status');
   if (!grid) return;
 
   const REACTIONS = ['❤️', '😂', '🚀'];
@@ -153,12 +153,15 @@
 
   async function refresh() {
     let items = [];
+    let connected = false;
     try {
       items = await Store.list();
+      connected = Boolean(supa);
     } catch (e) {
       console.error(e);
-      RianFX.toast('Deu ruim ao carregar o mural 😬');
+      if (supa) RianFX.toast('Deu ruim ao carregar o mural 😬');
     }
+    setDbStatus(connected);
     grid.innerHTML = items.map(cardHtml).join('');
     empty.classList.toggle('hidden', items.length > 0);
     wireCards(items);
@@ -186,39 +189,66 @@
   /* MOBILE: feed estilo Instagram — toca a música do post conforme rola por ele */
   let feedObserver = null;
   let feedHintShown = false;
+  let activeMusicEl = null;
+
+  function setActivePostMusic(el) {
+    if (activeMusicEl === el) return;
+    activeMusicEl?.querySelector('.post-music')?.classList.remove('is-playing');
+    activeMusicEl = el || null;
+    activeMusicEl?.querySelector('.post-music')?.classList.add('is-playing');
+  }
+
+  function isMobileFeed() {
+    return window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+  }
+
   function setupFeedAutoplay(items) {
     if (feedObserver) { feedObserver.disconnect(); feedObserver = null; }
-    if (!window.RianMusic || !window.matchMedia('(max-width: 640px)').matches) return;
+    setActivePostMusic(null);
+    if (!window.RianMusic || !isMobileFeed()) return;
+
+    const musicPosts = items.filter((x) => x.track_uri);
+    if (!musicPosts.length) return;
 
     const ratios = new Map();
     let activeId = null;
 
-    feedObserver = new IntersectionObserver((entries) => {
-      entries.forEach((e) => ratios.set(e.target, e.intersectionRatio));
+    function pickAndPlay() {
+      let best = null;
+      let bestRatio = 0;
+      ratios.forEach((r, el) => {
+        if (r > bestRatio) { bestRatio = r; best = el; }
+      });
 
-      // Pega o post de música mais visível (>=55% na tela)
-      let best = null, bestRatio = 0.55;
-      ratios.forEach((r, el) => { if (r > bestRatio) { bestRatio = r; best = el; } });
-
-      if (best) {
-        const item = items.find((x) => String(x.id) === best.dataset.id);
+      if (best && bestRatio >= 0.3) {
+        const item = musicPosts.find((x) => String(x.id) === best.dataset.id);
         if (item && String(item.id) !== activeId) {
           activeId = String(item.id);
+          setActivePostMusic(best);
           if (!RianMusic.isUnlocked() && !feedHintShown) {
             feedHintShown = true;
             RianFX.toast('🔊 Toque na tela pra liberar o som dos posts');
           }
-          RianMusic.play(item.track_uri, item.name);
+          RianMusic.play(item.track_uri, item.name, { showWidget: false });
         }
       } else if (activeId) {
         activeId = null;
+        setActivePostMusic(null);
         RianMusic.pause();
       }
-    }, { threshold: [0, 0.25, 0.55, 0.8, 1] });
+    }
+
+    feedObserver = new IntersectionObserver((entries) => {
+      entries.forEach((e) => ratios.set(e.target, e.intersectionRatio));
+      pickAndPlay();
+    }, {
+      threshold: [0, 0.15, 0.3, 0.5, 0.7, 0.9, 1],
+      rootMargin: '-10% 0px -10% 0px',
+    });
 
     grid.querySelectorAll('.polaroid').forEach((el) => {
-      const item = items.find((x) => String(x.id) === el.dataset.id);
-      if (item && item.track_uri) feedObserver.observe(el);
+      const item = musicPosts.find((x) => String(x.id) === el.dataset.id);
+      if (item) feedObserver.observe(el);
     });
   }
 
@@ -312,17 +342,22 @@
     window.openModal('card-modal');
 
     // Música também toca ao abrir o post
-    if (item.track_uri && window.RianMusic) RianMusic.play(item.track_uri, item.name);
+    if (item.track_uri && window.RianMusic) {
+      RianMusic.play(item.track_uri, item.name, { showWidget: !isMobileFeed() });
+    }
   }
 
-  /* ---------------- Status (mock x banco) ---------------- */
-  if (statusEl) {
-    statusEl.textContent = cfg.hasSupabase
-      ? '🟢 Conectado ao banco (Supabase). As mensagens são salvas de verdade.'
-      : '🟡 MODO DEMO: mensagens salvas só neste navegador. Configure o Supabase em js/config.js pra valer pra todo mundo.';
+  /* ---------------- Indicador de conexão (header) ---------------- */
+  function setDbStatus(online) {
+    if (!dbStatus) return;
+    dbStatus.classList.toggle('is-online', online);
+    dbStatus.classList.toggle('is-offline', !online);
+    dbStatus.title = online ? 'Conectado ao banco' : 'Desconectado';
+    dbStatus.setAttribute('aria-label', online ? 'Conectado ao banco' : 'Desconectado');
   }
 
   /* ---------------- Expor pro main.js ---------------- */
   window.RianMural = { add: Store.add, refresh };
+  window.addEventListener('rian-music-pause', () => setActivePostMusic(null));
   refresh();
 })();
